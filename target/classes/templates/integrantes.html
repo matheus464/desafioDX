@@ -3,23 +3,182 @@
 <head>
     <title>Lista de Integrantes</title>
     <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+
+        nav a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: white;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        h2 {
+            margin-top: 20px;
+            color: #4CAF50;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        form label {
+            margin-right: 10px;
+        }
+
+        form input, form button {
+            margin: 5px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        table th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .delete-icon {
+            color: red;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1.2em;
+        }
+
+        .result-section {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+
+        .result-section h3 {
+            color: #4CAF50;
+        }
+
+        .no-results {
+            color: red;
+        }
+    </style>
 </head>
 <body>
+
 <header>
-    <h1>Integrantes</h1>
+    <h1>Lista de Integrantes</h1>
     <nav>
         <a th:href="@{/}">Home</a>
         <a th:href="@{/times}">Times</a>
     </nav>
 </header>
 <main>
-    <h2>Lista de Integrantes</h2>
+
+    <!-- Filtros -->
+    <h2>Filtros</h2>
+
+    <!-- Buscar Integrante Mais Usado -->
+    <div>
+        <h3>Buscar Integrante Mais Usado no Período</h3>
+        <form th:action="@{/integrantes/mais-usado}" method="get">
+            <label for="dataInicial">Data Inicial:</label>
+            <input type="date" id="dataInicial" name="dataInicial" required>
+
+            <label for="dataFinal">Data Final:</label>
+            <input type="date" id="dataFinal" name="dataFinal" required>
+
+            <button type="submit">Buscar</button>
+            <button type="button" onclick="location.href='@{/integrantes}'">Limpar</button>
+        </form>
+    </div>
+
+    <!-- Resultado do Integrante Mais Usado -->
+    <div class="result-section" th:if="${resultadoPresente}">
+        <div th:if="${integranteMaisUsado != null}">
+            <h3>Integrante Mais Usado:</h3>
+            <p>
+                <strong>Nome:</strong> <span th:text="${integranteMaisUsado.nome}"></span><br>
+                <strong>Franquia:</strong> <span th:text="${integranteMaisUsado.franquia}"></span><br>
+                <strong>Função:</strong> <span th:text="${integranteMaisUsado.funcao}"></span>
+            </p>
+        </div>
+        <div th:if="${integranteMaisUsado == null}">
+            <p class="no-results">Nenhum integrante encontrado para o período selecionado.</p>
+        </div>
+    </div>
+
+    <!-- Buscar Time Mais Comum -->
+    <div>
+        <h3>Buscar Integrantes do Time Mais Comum no Período</h3>
+        <form th:action="@{/integrantes/time-mais-comum}" method="get">
+            <label for="dataInicialTime">Data Inicial:</label>
+            <input type="date" id="dataInicialTime" name="dataInicial" required>
+
+            <label for="dataFinalTime">Data Final:</label>
+            <input type="date" id="dataFinalTime" name="dataFinal" required>
+
+            <button type="submit">Buscar</button>
+        </form>
+    </div>
+
+    <!-- Resultado do Time Mais Comum -->
+    <div class="result-section" th:if="${timeMaisComumPresente}">
+        <div th:if="${integrantesTimeMaisComum != null and !integrantesTimeMaisComum.isEmpty()}">
+            <h3>Integrantes do Time Mais Comum:</h3>
+            <ul>
+                <li th:each="nome : ${integrantesTimeMaisComum}" th:text="${nome}"></li>
+            </ul>
+        </div>
+        <div th:if="${integrantesTimeMaisComum == null or integrantesTimeMaisComum.isEmpty()}">
+            <p class="no-results">Nenhum time encontrado para o período selecionado.</p>
+        </div>
+    </div>
+
+    <!-- Cadastro de Novo Integrante -->
+    <h2>Cadastrar Novo Integrante</h2>
+    <form th:action="@{/integrantes/save}" method="post">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" name="nome" required>
+
+        <label for="franquia">Franquia:</label>
+        <input type="text" id="franquia" name="franquia" required>
+
+        <label for="funcao">Função:</label>
+        <input type="text" id="funcao" name="funcao" required>
+
+        <button type="submit">Cadastrar Integrante</button>
+    </form>
+
+    <!-- Lista de Integrantes -->
+    <h2>Integrantes</h2>
     <table>
         <thead>
         <tr>
             <th>Nome</th>
             <th>Franquia</th>
             <th>Função</th>
+            <th>Ações</th>
         </tr>
         </thead>
         <tbody>
@@ -27,9 +186,15 @@
             <td th:text="${integrante.nome}"></td>
             <td th:text="${integrante.franquia}"></td>
             <td th:text="${integrante.funcao}"></td>
+            <td>
+                <a th:href="@{/integrantes/delete/{id}(id=${integrante.id})}" class="delete-icon" title="Excluir">
+                    🗑️
+                </a>
+            </td>
         </tr>
         </tbody>
     </table>
+
 </main>
 </body>
 </html>

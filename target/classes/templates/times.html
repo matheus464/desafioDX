@@ -1,24 +1,151 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Lista de Times</title>
+    <title>Cadastro de Times</title>
     <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+
+        nav a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: white;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        h2 {
+            margin-top: 20px;
+            color: #4CAF50;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        form label {
+            margin-right: 10px;
+        }
+
+        form input, form button {
+            margin: 5px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        table th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .checkbox-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .checkbox-list label {
+            margin-left: 5px;
+        }
+
+        .delete-icon {
+            color: red;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1.2em;
+        }
+
+        .result-section {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+    </style>
 </head>
 <body>
 <header>
-    <h1>Times</h1>
+    <h1>Cadastro de Times</h1>
     <nav>
         <a th:href="@{/}">Home</a>
         <a th:href="@{/integrantes}">Integrantes</a>
     </nav>
 </header>
 <main>
+
+    <!-- Buscar Time pela Data -->
+    <h2>Buscar Time pela Data</h2>
+    <form th:action="@{/times/filter-date}" method="get">
+        <label for="data">Data:</label>
+        <input type="date" id="data" name="data" required>
+        <button type="submit">Buscar</button>
+        <button type="button" onclick="location.href='@{/times}'">Limpar</button>
+
+    </form>
+
+    <!-- Resultado da Busca -->
+    <div class="result-section" th:if="${buscaRealizada}">
+        <div th:if="${timeEncontrado != null}">
+            <h3>Time Encontrado:</h3>
+            <p><strong>Data:</strong> <span th:text="${timeEncontrado.data}"></span></p>
+            <h4>Integrantes:</h4>
+            <ul>
+                <li th:each="composicao : ${timeEncontrado.composicoes}" th:text="${composicao.integrante.nome}"></li>
+            </ul>
+        </div>
+        <div th:if="${timeEncontrado == null}">
+            <p>Nenhum time encontrado para a data selecionada.</p>
+        </div>
+    </div>
+
+
+    <!-- Cadastro de Novo Time -->
+    <h2>Cadastrar Novo Time</h2>
+    <form th:action="@{/times/save}" method="post">
+        <label for="dataCadastro">Data:</label>
+        <input type="date" id="dataCadastro" name="data" required> <br>
+
+        <label for="integrantes">Selecione os Integrantes:</label>
+        <div id="integrantes" class="checkbox-list">
+            <div th:each="integrante : ${integrantes}">
+                <input type="checkbox" th:id="'integrante-' + ${integrante.id}" th:name="integrantes[]" th:value="${integrante.id}">
+                <label th:for="'integrante-' + ${integrante.id}" th:text="${integrante.nome}"></label>
+            </div>
+        </div>
+        <button type="submit">Cadastrar Time</button>
+    </form>
+
+    <!-- Lista de Times -->
     <h2>Lista de Times</h2>
     <table>
         <thead>
         <tr>
             <th>Data</th>
             <th>Integrantes</th>
+            <th>Ações</th>
         </tr>
         </thead>
         <tbody>
@@ -29,9 +156,15 @@
                     <li th:each="composicao : ${time.composicoes}" th:text="${composicao.integrante.nome}"></li>
                 </ul>
             </td>
+            <td>
+                <form th:action="@{/times/delete/{id}(id=${time.id})}" method="post" style="display:inline;">
+                    <button type="submit" class="delete-icon" title="Excluir">🗑️</button>
+                </form>
+            </td>
         </tr>
         </tbody>
     </table>
+
 </main>
 </body>
 </html>
