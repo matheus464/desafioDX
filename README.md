@@ -2,20 +2,16 @@
 
 ## Descrição do Projeto:
 
-Este é um sistema desenvolvido para gerenciar a escalação de times em diferentes esportes (tradicionais ou eSports). O sistema permite o cadastro de integrantes, a criação de times e consultas relacionadas aos dados cadastrados.
-O projeto foi desenvolvido em Java utilizando o framework Spring Boot com o banco de dados H2 para testes e Thymeleaf para renderização de páginas HTML no frontend.
+Sistema para gerenciar escalações de times (esportes tradicionais ou eSports). Permite cadastro de integrantes, criação de times e consultas sobre os dados. Desenvolvido em Java com Spring Boot, banco de dados H2 e Thymeleaf.
 
 ## Funcionalidades Implementadas
 
 ### Gerenciamento de Integrantes:
 Cadastro de Integrantes:
-Nome, franquia e função.
-Exclusão de Integrantes:
-Exclusão permanente diretamente da lista de integrantes.
-Busca do Integrante Mais Usado:
-Busca do integrante que participou de mais times em um período selecionado.
-Busca de Integrantes do Time Mais Comum:
-Exibe os integrantes pertencentes ao time mais frequente dentro de um período.
+Cadastro (nome, franquia e função).
+Exclusão permanente.
+Busca pelo integrante mais usado ou do time mais comum em um período.
+
 
 ### Gerenciamento de Times
 
