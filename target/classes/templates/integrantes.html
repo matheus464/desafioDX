@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Lista de Integrantes</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header>
+    <h1>Integrantes</h1>
+    <nav>
+        <a th:href="@{/}">Home</a>
+        <a th:href="@{/times}">Times</a>
+    </nav>
+</header>
+<main>
+    <h2>Lista de Integrantes</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Franquia</th>
+            <th>Função</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="integrante : ${integrantes}">
+            <td th:text="${integrante.nome}"></td>
+            <td th:text="${integrante.franquia}"></td>
+            <td th:text="${integrante.funcao}"></td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>
