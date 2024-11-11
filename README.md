@@ -49,6 +49,7 @@ cd desafioDX
 
 em gitbash: mvn clean install , mvn spring-boot:run ( ou rodar arquivo DuxusdesafioApplication)
 port tradicional: localhost:8080/rotas do endpoint FrontendController
-utilizado IntelliJ IDEA 2024.2.4
+
+#### utilizado IntelliJ IDEA 2024.2.4
 
 #### Obs: Até o momento fiz algumas funcionalidades para testes e meu html bem simples, desse modo informo que nao finalizei todo o projeto. Fico à disposição!
