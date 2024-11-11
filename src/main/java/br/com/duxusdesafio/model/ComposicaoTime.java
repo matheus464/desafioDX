@@ -3,6 +3,7 @@ package br.com.duxusdesafio.model;
 import javax.persistence.*;
 
 @Entity
+@Table(name = "COMPOSICAO_TIME ")
 public class ComposicaoTime {
 
     @Id
@@ -18,6 +19,14 @@ public class ComposicaoTime {
     @ManyToOne
     @JoinColumn(name = "id_integrante", nullable = false)
     private Integrante integrante;
+
+    public ComposicaoTime(Object o, Time time1, Integrante integrante2) {
+        this.time = time1;
+        this.integrante = integrante2;
+    }
+
+    public ComposicaoTime() {}
+
 
     // Getters e Setters
     public Long getId() {

@@ -4,6 +4,7 @@ import javax.persistence.*;
 import java.util.List;
 
 @Entity
+@Table(name = "INTEGRANTE")
 public class Integrante {
 
     @Id
@@ -22,6 +23,18 @@ public class Integrante {
     // Relacionamento com ComposicaoTime
     @OneToMany(mappedBy = "integrante", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ComposicaoTime> composicoes;
+
+    public Integrante (Long id, String franquia, String nome, String funcao) {
+        this.id = id;
+        this.franquia = franquia;
+        this.nome = nome;
+        this.funcao = funcao;
+    }
+
+    public Integrante() {
+
+    }
+
 
     // Getters e Setters
     public Long getId() {

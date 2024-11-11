@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Entity
+@Table(name = "TIME")
 public class Time {
 
     @Id
@@ -16,6 +17,15 @@ public class Time {
 
     @OneToMany(mappedBy = "time", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ComposicaoTime> composicoes;
+
+    public Time() {
+
+    }
+
+    public Time(Long id, LocalDate data) {
+        this.id = id;
+        this.data = data;
+    }
 
     // Getters e Setters
     public Long getId() {
