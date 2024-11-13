@@ -3,7 +3,9 @@
 <head>
     <title>Lista de Integrantes</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}" rel="stylesheet">
     <style>
+        /* Estilo geral */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -28,20 +30,46 @@
         }
 
         h2 {
-            margin-top: 20px;
             color: #4CAF50;
+            font-size: 18px;
+            margin-bottom: 10px;
         }
 
-        form {
+        h3 {
+            color: #4CAF50;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .filter-section, .form-section {
             margin-bottom: 20px;
         }
 
-        form label {
-            margin-right: 10px;
+        label {
+            font-size: 14px;
+            color: #333;
         }
 
-        form input, form button {
-            margin: 5px 0;
+        input[type="date"], input[type="text"] {
+            width: 200px;
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: #45a049;
         }
 
         table {
@@ -64,19 +92,13 @@
         .delete-icon {
             color: red;
             cursor: pointer;
-            text-decoration: none;
             font-size: 1.2em;
+            border: none;
         }
 
         .result-section {
             margin-top: 20px;
             padding: 10px;
-            border: 1px solid #ddd;
-            background-color: #f9f9f9;
-        }
-
-        .result-section h3 {
-            color: #4CAF50;
         }
 
         .no-results {
@@ -85,7 +107,6 @@
     </style>
 </head>
 <body>
-
 <header>
     <h1>Lista de Integrantes</h1>
     <nav>
@@ -95,8 +116,56 @@
 </header>
 <main>
 
-    <!-- Filtros -->
-    <h2>Filtros</h2>
+    <!-- Contar Franquias por Período -->
+    <div class="filter-section">
+        <h2>Contar Franquias por Período</h2>
+        <form th:action="@{/integrantes/count-franchises}" method="get">
+            <label for="dataInicialContagem">Data Inicial:</label>
+            <input type="date" id="dataInicialContagem" name="dataInicial" required>
+
+            <label for="dataFinalContagem">Data Final:</label>
+            <input type="date" id="dataFinalContagem" name="dataFinal" required>
+
+            <button type="submit">Contar Franquias</button>
+        </form>
+    </div>
+    <div th:if="${buscaPorContagem}">
+        <h3>Contagem de Franquias no Período Selecionado</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Franquia</th>
+                <th>Total</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="entry : ${contagemFranquias}">
+                <td th:text="${entry.key}"></td>
+                <td th:text="${entry.value}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- Filtrar Franquia Mais Famosa -->
+    <div class="filter-section">
+        <h2>Filtrar Franquia Mais Famosa por Período</h2>
+        <form th:action="@{/integrantes/filter-most-famous-franchise}" method="get">
+            <label for="dataInicialFranquia">Data Inicial:</label>
+            <input type="date" id="dataInicialFranquia" name="dataInicial" required>
+
+            <label for="dataFinalFranquia">Data Final:</label>
+            <input type="date" id="dataFinalFranquia" name="dataFinal" required>
+
+            <button type="submit">Filtrar Franquia Mais Famosa</button>
+        </form>
+    </div>
+    <div th:if="${buscaPorFranquia}">
+        <h3>Franquia Mais Famosa no Período Selecionado</h3>
+        <p th:text="${franquiaMaisFamosa != null ? franquiaMaisFamosa : 'Nenhuma franquia encontrada no período selecionado.'}"></p>
+    </div>
+
 
     <!-- Buscar Integrante Mais Usado -->
     <div>
@@ -109,10 +178,8 @@
             <input type="date" id="dataFinal" name="dataFinal" required>
 
             <button type="submit">Buscar</button>
-            <button type="button" onclick="location.href='@{/integrantes}'">Limpar</button>
         </form>
     </div>
-
     <!-- Resultado do Integrante Mais Usado -->
     <div class="result-section" th:if="${resultadoPresente}">
         <div th:if="${integranteMaisUsado != null}">
@@ -128,72 +195,51 @@
         </div>
     </div>
 
-    <!-- Buscar Time Mais Comum -->
-    <div>
-        <h3>Buscar Integrantes do Time Mais Comum no Período</h3>
-        <form th:action="@{/integrantes/time-mais-comum}" method="get">
-            <label for="dataInicialTime">Data Inicial:</label>
-            <input type="date" id="dataInicialTime" name="dataInicial" required>
 
-            <label for="dataFinalTime">Data Final:</label>
-            <input type="date" id="dataFinalTime" name="dataFinal" required>
 
-            <button type="submit">Buscar</button>
+    <!-- Cadastro de Novo Integrante -->
+    <div class="form-section">
+        <h2>Cadastrar Novo Integrante</h2>
+        <form th:action="@{/integrantes/save}" method="post">
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" name="nome" required>
+
+            <label for="franquia">Franquia:</label>
+            <input type="text" id="franquia" name="franquia" required>
+
+            <label for="funcao">Função:</label>
+            <input type="text" id="funcao" name="funcao" required>
+
+            <button type="submit">Cadastrar Integrante</button>
         </form>
     </div>
 
-    <!-- Resultado do Time Mais Comum -->
-    <div class="result-section" th:if="${timeMaisComumPresente}">
-        <div th:if="${integrantesTimeMaisComum != null and !integrantesTimeMaisComum.isEmpty()}">
-            <h3>Integrantes do Time Mais Comum:</h3>
-            <ul>
-                <li th:each="nome : ${integrantesTimeMaisComum}" th:text="${nome}"></li>
-            </ul>
-        </div>
-        <div th:if="${integrantesTimeMaisComum == null or integrantesTimeMaisComum.isEmpty()}">
-            <p class="no-results">Nenhum time encontrado para o período selecionado.</p>
-        </div>
-    </div>
-
-    <!-- Cadastro de Novo Integrante -->
-    <h2>Cadastrar Novo Integrante</h2>
-    <form th:action="@{/integrantes/save}" method="post">
-        <label for="nome">Nome:</label>
-        <input type="text" id="nome" name="nome" required>
-
-        <label for="franquia">Franquia:</label>
-        <input type="text" id="franquia" name="franquia" required>
-
-        <label for="funcao">Função:</label>
-        <input type="text" id="funcao" name="funcao" required>
-
-        <button type="submit">Cadastrar Integrante</button>
-    </form>
-
     <!-- Lista de Integrantes -->
-    <h2>Integrantes</h2>
-    <table>
-        <thead>
-        <tr>
-            <th>Nome</th>
-            <th>Franquia</th>
-            <th>Função</th>
-            <th>Ações</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="integrante : ${integrantes}">
-            <td th:text="${integrante.nome}"></td>
-            <td th:text="${integrante.franquia}"></td>
-            <td th:text="${integrante.funcao}"></td>
-            <td>
-                <a th:href="@{/integrantes/delete/{id}(id=${integrante.id})}" class="delete-icon" title="Excluir">
-                    🗑️
-                </a>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+    <div class="form-section">
+        <h2>Integrantes</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Franquia</th>
+                <th>Função</th>
+                <th>Ações</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="integrante : ${integrantes}">
+                <td th:text="${integrante.nome}"></td>
+                <td th:text="${integrante.franquia}"></td>
+                <td th:text="${integrante.funcao}"></td>
+                <td>
+                    <a th:href="@{/integrantes/delete/{id}(id=${integrante.id})}" class="delete-icon" title="Excluir">
+                        🗑️
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 
 </main>
 </body>

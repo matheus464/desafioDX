@@ -7,15 +7,15 @@ import br.com.duxusdesafio.repository.ComposicaoTimeRepository;
 import br.com.duxusdesafio.repository.IntegranteRepository;
 import br.com.duxusdesafio.repository.TimeRepository;
 import br.com.duxusdesafio.service.ApiService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Controller
@@ -40,7 +40,7 @@ public class FrontendController {
     }
 
     @GetMapping("/times")
-    public String times(Model model) {
+    public String getTimes(Model model) {
         List<Time> times = timeRepository.findAll();
         List<Integrante> integrantes = integranteRepository.findAll(); // Adicionar os integrantes disponíveis
         model.addAttribute("times", times);
@@ -120,6 +120,7 @@ public class FrontendController {
 
             // Adicionar apenas o integrante mais usado ao modelo
             model.addAttribute("integranteMaisUsado", integranteMaisUsado);
+            model.addAttribute("resultadoPresente", true);
         }
 
         return "integrantes";
@@ -143,29 +144,108 @@ public class FrontendController {
 
         // Adicionar os resultados ao modelo
         model.addAttribute("integrantesTimeMaisComum", integrantesTimeMaisComum);
-        model.addAttribute("resultadoPresente", true);
+        model.addAttribute("timeMaisComumPresente", true);
 
         return "integrantes";
     }
 
-    @GetMapping("/times/filter-date")
-    public String filterTimeByDate(@RequestParam("data") String data, Model model) {
-        LocalDate date = LocalDate.parse(data);
-
-        // Carregar todos os times
-        List<Time> todosOsTimes = timeRepository.findAll();
-
-        // Usar o método timeDaData
-        Time timeEncontrado = apiService.timeDaData(date, todosOsTimes);
-
-        // Adicionar ao modelo
-        model.addAttribute("timeEncontrado", timeEncontrado);
-        model.addAttribute("buscaRealizada", true); // Indica que o filtro foi usado
-        model.addAttribute("times", timeRepository.findAll()); // Atualiza lista de times
-        model.addAttribute("integrantes", integranteRepository.findAll()); // Atualiza lista de integrantes
+    @GetMapping("/times/filter-by-date")
+    public String filterTimesByDate(
+            @RequestParam("dataInicial") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicial,
+            @RequestParam("dataFinal") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFinal,
+            Model model) {
+        List<Time> timesFiltrados = timeRepository.findByDataBetween(dataInicial, dataFinal);
+        model.addAttribute("times", timesFiltrados); // Adiciona os times filtrados ao modelo
+        model.addAttribute("buscaPorData", true); // Indica que a busca foi realizada
         return "times";
     }
 
+
+
+    //Metódo para buscar função mais comum dos times em um período.
+    @GetMapping("/times/filter-most-common-role")
+    public String filtrarFuncaoMaisComum(
+            @RequestParam("dataInicial") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicial,
+            @RequestParam("dataFinal") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFinal,
+            Model model) {
+        // Buscar todos os times no período
+        List<Time> timesFiltrados = timeRepository.findByDataBetween(dataInicial, dataFinal);
+
+        // Calcular a função mais comum
+        List<ComposicaoTime> composicoes = timesFiltrados.stream()
+                .flatMap(time -> time.getComposicoes().stream())
+                .toList();
+
+        String funcaoMaisComum = composicoes.stream()
+                .map(composicao -> composicao.getIntegrante().getFuncao())
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                .entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse("Nenhuma função encontrada");
+
+        model.addAttribute("funcaoMaisComum", funcaoMaisComum);
+        model.addAttribute("exibirContagemFuncoes", false); // Não exibe o totalizador
+        model.addAttribute("exibirFuncaoMaisComum", true); // Exibe a função mais comum
+        return "times";
+    }
+
+    //Metódo para buscar a franquia mais famosa dentro de um perido.
+    @GetMapping("/integrantes/filter-most-famous-franchise")
+    public String filterMostFamousFranchise(
+            @RequestParam("dataInicial") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicial,
+            @RequestParam("dataFinal") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFinal,
+            Model model) {
+        // Buscar todos os times no período
+        List<Time> todosOsTimes = timeRepository.findByDataBetween(dataInicial, dataFinal);
+
+        // Determinar a franquia mais famosa
+        String franquiaMaisFamosa = apiService.franquiaMaisFamosa(dataInicial, dataFinal, todosOsTimes);
+
+        // Adicionar ao modelo
+        model.addAttribute("franquiaMaisFamosa", franquiaMaisFamosa);
+        model.addAttribute("buscaPorFranquia", true);
+        return "integrantes";
+    }
+
+
+    //Metódo que Vai retornar o número (quantidade) de Franquias dentro do período.
+    @GetMapping("/integrantes/count-franchises")
+    public String countFranchises(
+            @RequestParam("dataInicial") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicial,
+            @RequestParam("dataFinal") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFinal,
+            Model model) {
+        // Buscar todos os times no período
+        List<Time> todosOsTimes = timeRepository.findByDataBetween(dataInicial, dataFinal);
+
+        // Contar franquias
+        Map<String, Long> contagemFranquias = apiService.contagemPorFranquia(dataInicial, dataFinal, todosOsTimes);
+
+        // Adicionar os resultados ao modelo
+        model.addAttribute("contagemFranquias", contagemFranquias);
+        model.addAttribute("buscaPorContagem", true);
+        return "integrantes";
+    }
+
+
+    //Metódo que Vai retornar o número (quantidade) de Funções dentro do período.
+    @GetMapping("/times/count-functions")
+    public String countFunctions(
+            @RequestParam("dataInicial") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicial,
+            @RequestParam("dataFinal") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFinal,
+            Model model) {
+        // Buscar todos os times no período
+        List<Time> todosOsTimes = timeRepository.findByDataBetween(dataInicial, dataFinal);
+
+        // Contar funções
+        Map<String, Long> contagemFuncoes = apiService.contagemPorFuncao(dataInicial, dataFinal, todosOsTimes);
+
+        // Adicionar os resultados ao modelo
+        model.addAttribute("contagemFuncoes", contagemFuncoes); // Contagem das funções
+        model.addAttribute("exibirContagemFuncoes", true); // Indica que a busca foi realizada
+        model.addAttribute("exibirFuncaoMaisComum", false);
+        return "times"; // Retorna para o template `times.html`
+    }
 
 
 }

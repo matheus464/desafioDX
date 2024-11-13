@@ -18,16 +18,6 @@ import java.util.stream.Collectors;
 public class ApiService {
 
     /**
-     * Vai retornar um Time, com a composição do time daquela data
-     */
-    public Time timeDaData(LocalDate data, List<Time> todosOsTimes){
-        return todosOsTimes.stream()
-                .filter(time -> time.getData().equals(data))
-                .findFirst()
-                .orElse(null);
-    }
-
-    /**
      * Vai retornar o integrante que estiver presente na maior quantidade de times
      * dentro do período
      */
@@ -58,21 +48,6 @@ public class ApiService {
                         .map(composicao -> composicao.getIntegrante().getNome())
                         .collect(Collectors.toList()))
                 .orElse(Collections.emptyList());
-    }
-
-    /**
-     * Vai retornar a função mais comum nos times dentro do período
-     */
-    public String funcaoMaisComum(LocalDate dataInicial, LocalDate dataFinal, List<Time> todosOsTimes){
-        return todosOsTimes.stream()
-                .filter(time -> isDataDentroDoPeriodo(time.getData(), dataInicial, dataFinal))
-                .flatMap(time -> time.getComposicoes().stream())
-                .map(composicao -> composicao.getIntegrante().getFuncao())
-                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
-                .entrySet().stream()
-                .max(Map.Entry.comparingByValue())
-                .map(Map.Entry::getKey)
-                .orElse(null);
     }
 
     /**

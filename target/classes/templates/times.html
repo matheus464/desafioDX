@@ -3,6 +3,7 @@
 <head>
     <title>Cadastro de Times</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}" rel="stylesheet">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -28,8 +29,9 @@
         }
 
         h2 {
-            margin-top: 20px;
             color: #4CAF50;
+            font-size: 18px;
+            margin-bottom: 10px;
         }
 
         form {
@@ -40,6 +42,10 @@
             margin-right: 10px;
         }
 
+        label{
+            font-size: 14px;
+            color: #333;
+        }
         form input, form button {
             margin: 5px 0;
         }
@@ -74,16 +80,39 @@
         .delete-icon {
             color: red;
             cursor: pointer;
-            text-decoration: none;
             font-size: 1.2em;
+            border: none;
         }
 
-        .result-section {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            background-color: #f9f9f9;
+        .no-results {
+            color: red;
         }
+
+        button {
+            background-color: #4CAF50; /* Verde correspondente ao cabeçalho */
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 5px; /* Espaço entre os botões */
+        }
+
+        button:hover {
+            background-color: #45a049; /* Cor mais escura ao passar o mouse */
+        }
+
+        input[type="text"],
+        input[type="date"] {
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px; /* Espaço entre inputs */
+            width: 180px;
+        }
+
     </style>
 </head>
 <body>
@@ -96,30 +125,97 @@
 </header>
 <main>
 
-    <!-- Buscar Time pela Data -->
-    <h2>Buscar Time pela Data</h2>
-    <form th:action="@{/times/filter-date}" method="get">
-        <label for="data">Data:</label>
-        <input type="date" id="data" name="data" required>
-        <button type="submit">Buscar</button>
-        <button type="button" onclick="location.href='@{/times}'">Limpar</button>
+    <!--Filtragem buscar total função por perido -->
+    <h2>Contar Funções por Período</h2>
+    <form th:action="@{/times/count-functions}" method="get">
+        <label for="dataInicialFuncao">Data Inicial:</label>
+        <input type="date" id="dataInicialFuncaoCount" name="dataInicial" required>
 
+        <label for="dataFinalFuncao">Data Final:</label>
+        <input type="date" id="dataFinalFuncaoCount" name="dataFinal" required>
+
+        <button type="submit">Contar Funções</button>
     </form>
-
-    <!-- Resultado da Busca -->
-    <div class="result-section" th:if="${buscaRealizada}">
-        <div th:if="${timeEncontrado != null}">
-            <h3>Time Encontrado:</h3>
-            <p><strong>Data:</strong> <span th:text="${timeEncontrado.data}"></span></p>
-            <h4>Integrantes:</h4>
-            <ul>
-                <li th:each="composicao : ${timeEncontrado.composicoes}" th:text="${composicao.integrante.nome}"></li>
-            </ul>
-        </div>
-        <div th:if="${timeEncontrado == null}">
-            <p>Nenhum time encontrado para a data selecionada.</p>
-        </div>
+    <!--Resultado total função por perído -->
+    <div th:if="${exibirContagemFuncoes}">
+        <h2>Totalizador de Funções no Período Selecionado</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Função</th>
+                <th>Total</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="entry : ${contagemFuncoes}">
+                <td th:text="${entry.key}"></td>
+                <td th:text="${entry.value}"></td>
+            </tr>
+            </tbody>
+        </table>
     </div>
+
+
+    <!--Filtrar Função mais comum por perído -->
+    <h2>Filtrar Função Mais Comum por Período</h2>
+    <form th:action="@{/times/filter-most-common-role}" method="get">
+        <label for="dataInicialFuncao">Data Inicial:</label>
+        <input type="date" id="dataInicialFuncao" name="dataInicial" required>
+
+        <label for="dataFinalFuncao">Data Final:</label>
+        <input type="date" id="dataFinalFuncao" name="dataFinal" required>
+
+        <button type="submit">Filtrar Função Mais Comum</button>
+    </form>
+    <!--Resultado função mais comum -->
+    <div th:if="${exibirFuncaoMaisComum}">
+        <h3>Função Mais Comum no Período Selecionado</h3>
+        <p th:text="${funcaoMaisComum}"></p>
+    </div>
+
+
+
+
+
+    <!-- Buscar Time pela Data -->
+    <h2>Filtrar Times por Período</h2>
+    <form th:action="@{/times/filter-by-date}" method="get">
+        <label for="dataInicialTimes">Data Inicial:</label>
+        <input type="date" id="dataInicialTimes" name="dataInicial" required>
+
+        <label for="dataFinalTimes">Data Final:</label>
+        <input type="date" id="dataFinalTimes" name="dataFinal" required>
+
+        <button type="submit">Filtrar Times</button>
+    </form>
+    <!-- Resultado da Busca de times por data -->
+    <div th:if="${buscaPorData}">
+        <h3>Resultado da Busca de Times</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Data</th>
+                <th>Integrantes</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Caso não existam resultados -->
+            <tr th:if="${times.isEmpty()}">
+                <td colspan="2">Nenhum time encontrado no período selecionado.</td>
+            </tr>
+            <!-- Caso existam resultados -->
+            <tr th:each="time : ${times}">
+                <td th:text="${time.data}"></td>
+                <td>
+                    <ul>
+                        <li th:each="composicao : ${time.composicoes}" th:text="${composicao.integrante.nome}"></li>
+                    </ul>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
 
 
     <!-- Cadastro de Novo Time -->
@@ -157,9 +253,9 @@
                 </ul>
             </td>
             <td>
-                <form th:action="@{/times/delete/{id}(id=${time.id})}" method="post" style="display:inline;">
-                    <button type="submit" class="delete-icon" title="Excluir">🗑️</button>
-                </form>
+                    <a th:action="@{/times/delete/{id}(id=${time.id})}" class="delete-icon"  title="Excluir">
+                        🗑️
+                    </a>
             </td>
         </tr>
         </tbody>
