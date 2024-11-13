@@ -55,4 +55,6 @@ favor realizar os testes de filtragem desta data em diante.
 
 #### utilizado IntelliJ IDEA 2024.2.4
 
-#### Obs: Até o momento fiz algumas funcionalidades para testes e meu html bem simples, desse modo informo que nao finalizei todo o projeto. Fico à disposição!
+#### Obs: para cada teste nos filtros, favor limpar os campos de data atraves do calendario adicionado aos mesmos, ao clicar no icone para inserir a data aparecerá limpar.
+para cada teste, deve ser clicado no botão de retroceder do navegador para que entre novamente na pagina para uma nova consulta.
+duvidas estou à disposição. 
